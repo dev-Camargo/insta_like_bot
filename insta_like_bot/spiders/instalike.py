@@ -52,14 +52,16 @@ class InstaLikeSpider(scrapy.Spider):
         driver, wait = start_driver()
         driver.get(response.url)
 
+        data = get_bot_account()
+
         username = wait.until(EC.element_to_be_clickable(
             (By.XPATH, "//input[@name='username']")))
-        username.send_keys('1')
+        username.send_keys(data[0])
         sleep(1)
 
         password = wait.until(EC.element_to_be_clickable(
             (By.XPATH, "//input[@name='password']")))
-        password.send_keys('1')
+        password.send_keys(data[1])
         sleep(1)
 
         login = wait.until(EC.element_to_be_clickable(
@@ -69,14 +71,40 @@ class InstaLikeSpider(scrapy.Spider):
         login.click()
 
         profiles_urls = get_profile_urls()
-        sleep(2)
 
         for profile in profiles_urls:
+            sleep(5)
+
             driver.get(profile)
-            sleep(10)
-            # Definir Comandos
+            sleep(3)
+
+            posts = wait.until(EC.visibility_of_any_elements_located(
+                (By.XPATH, "//div[@class='_aagu']")))
+            posts[0].click()
+            sleep(5)
+
+            post_elements = wait.until(EC.visibility_of_any_elements_located(
+                (By.XPATH, "//section[@class='_aamu _ae3_ _ae47 _ae48']//div[@class='_abm0 _abl_']")))
+            if len(post_elements) == 4:
+                post_elements[0].click()
+                sleep(2)
+
+            else:
+                print('already liked!')
 
         driver.close()
+
+
+def get_bot_account():
+    data = []
+    absolute_path = os.path.dirname(__file__)
+    relative_path = "../../bot_account.txt"
+    domain_path = os.path.join(absolute_path, relative_path)
+
+    for line in open(domain_path, 'r').readlines():
+        data.append(line)
+
+    return data
 
 
 def get_profile_urls():
